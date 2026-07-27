@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+   <link rel="manifest" href="manifest.json">
+   
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Pusat - Kontrol Aplikasi Kasir</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+            --warning-color: #d97706;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .admin-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 950px;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            color: var(--text-main);
+        }
+
+        .badge-admin {
+            background-color: #dbeafe;
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Statistik Ringkas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .stat-card h3 {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            margin-top: 2px;
+        }
+
+        /* Kontrol Tab & Pencarian */
+        .controls-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .search-box:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Tabel Manajemen Langganan */
+        .table-container {
+            width: 100%;
+            max-height: 450px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.83rem;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .store-name {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .store-phone {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .badge-status {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .status-aktif { background-color: #dcfce7; color: var(--success-color); }
+        .status-terkunci { background-color: #fee2e2; color: var(--danger-color); }
+
+        /* Input Tanggal & Waktu */
+        .date-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .date-input-group label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .input-datetime {
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            outline: none;
+            background: white;
+        }
+
+        .input-datetime:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Tombol Aksi */
+        .btn-action {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            transition: opacity 0.2s;
+            margin-bottom: 4px;
+            display: inline-block;
+        }
+
+        .btn-action:hover { opacity: 0.85; }
+        .bg-lock { background-color: var(--danger-color); }
+        .bg-unlock { background-color: var(--success-color); }
+        .bg-save { background-color: var(--primary-color); width: 100%; text-align: center; }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <!-- Header Panel -->
+        <div class="header">
+            <h1>Panel Kontrol Langganan</h1>
+            <span class="badge-admin">Admin Pusat</span>
+        </div>
+
+        <!-- Statistik Ringkas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span>Total Toko</span>
+                <h3 id="statTotal">0</h3>
+            </div>
+            <div class="stat-card">
+                <span>Aktif</span>
+                <h3 id="statAktif" style="color: var(--success-color);">0</h3>
+            </div>
+            <div class="stat-card">
+                <span>Terkunci / Habis</span>
+                <h3 id="statTerkunci" style="color: var(--danger-color);">0</h3>
+            </div>
+        </div>
+
+        <!-- Kontrol Tab & Pencarian -->
+        <div class="controls-wrapper">
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('semua', this)">Semua</button>
+                <button class="tab-btn" onclick="switchTab('aktif', this)">Aktif</button>
+                <button class="tab-btn" onclick="switchTab('terkunci', this)">Terkunci</button>
+            </div>
+            <input type="text" id="searchInput" class="search-box" placeholder="Cari nama toko / No. HP..." oninput="renderTable()">
+        </div>
+
+        <!-- Tabel Manajemen Waktu Langganan -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Informasi Toko</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 40%;">Periode Berlangganan (Mulai & Berakhir)</th>
+                        <th style="width: 20%; text-align: center;">Aksi Kontrol</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBodyUser">
+                    <tr>
+                        <td colspan="4" class="empty-state">Memuat data dari server...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Skrip Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyAcvaZATpsbSNtBAuKxuCsvpfLjODc7Cko",
+          authDomain: "asisten-toko.firebaseapp.com",
+          databaseURL: "https://asisten-toko-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "asisten-toko",
+          storageBucket: "asisten-toko.firebasestorage.app",
+          messagingSenderId: "493614445360",
+          appId: "1:493614445360:web:2f235b72bdace6578c8ef5",
+          measurementId: "G-1923M0HH2W"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        const dbRef = firebase.database().ref("users");
+        let globalUsersData = [];
+        let currentTab = 'semua';
+
+        function loadUsers() {
+            dbRef.on("value", (snapshot) => {
+                if (!snapshot.exists()) {
+                    globalUsersData = [];
+                    renderTable();
+                    updateStats();
+                    return;
+                }
+
+                globalUsersData = [];
+                snapshot.forEach((childSnapshot) => {
+                    globalUsersData.push({
+                        userId: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+
+                // Jalankan fungsi pengecekan otomatis waktu habis setiap data berubah/dimuat
+                checkAndUpdateExpiredUsers();
+
+                updateStats();
+                renderTable();
+            }, (error) => {
+                console.error("Gagal memuat data: ", error);
+                document.getElementById("tableBodyUser").innerHTML = `<tr><td colspan="4" class="empty-state">Gagal terhubung: ${error.message}</td></tr>`;
+            });
+        }
+
+        // Fungsi otomatis memeriksa database jika ada waktu langganan yang lewat dan mengubah status ke database
+        function checkAndUpdateExpiredUsers() {
+            const now = new Date().getTime();
+            
+            globalUsersData.forEach(user => {
+                const status = user.status_langganan || "terkunci";
+                const expiredTimeStr = user.expired_time;
+
+                if (expiredTimeStr && status === "aktif") {
+                    const expiredTime = new Date(expiredTimeStr).getTime();
+                    // Jika waktu sekarang sudah melewati waktu kedaluwarsa
+                    if (now > expiredTime) {
+                        // Perbarui otomatis langsung ke Realtime Database dan kirim notifikasi habis
+                        dbRef.child(user.userId).update({
+                            status_langganan: "terkunci",
+                            notifikasi_kasir: {
+                                pesan: "⚠️ Masa aktif langganan Anda telah HABIS / TERKUNCI. Silakan lakukan pembayaran untuk melanjutkan.",
+                                waktu_kirim: new Date().toISOString(),
+                                dibaca: false
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        function updateStats() {
+            const total = globalUsersData.length;
+            const now = new Date().getTime();
+            
+            const aktif = globalUsersData.filter(u => {
+                const status = u.status_langganan || "terkunci";
+                const expired = u.expired_time ? new Date(u.expired_time).getTime() : 0;
+                return status === "aktif" && (!u.expired_time || now <= expired);
+            }).length;
+
+            const terkunci = total - aktif;
+
+            document.getElementById("statTotal").innerText = total;
+            document.getElementById("statAktif").innerText = aktif;
+            document.getElementById("statTerkunci").innerText = terkunci;
+        }
+
+        function switchTab(tabName, element) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById("tableBodyUser");
+            const keyword = document.getElementById("searchInput").value.toLowerCase();
+            const now = new Date().getTime();
+
+            const filtered = globalUsersData.filter(user => {
+                const profile = user.profile || {};
+                const storeName = (profile.storeName || "").toLowerCase();
+                const phone = (profile.phone || "").toLowerCase();
+                
+                const status = user.status_langganan || "terkunci";
+                const expiredTime = user.expired_time ? new Date(user.expired_time).getTime() : 0;
+                const isRealAktif = status === 'aktif' && (!user.expired_time || now <= expiredTime);
+
+                const matchKeyword = storeName.includes(keyword) || phone.includes(keyword);
+                
+                if (currentTab === 'aktif') return matchKeyword && isRealAktif;
+                if (currentTab === 'terkunci') return matchKeyword && !isRealAktif;
+                return matchKeyword;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">Tidak ada data pengguna ditemukan.</td></tr>`;
+                return;
+            }
+
+            let htmlContent = "";
+
+            filtered.forEach((user) => {
+                const userId = user.userId;
+                const profile = user.profile || {};
+                const namaToko = profile.storeName || "Toko Tanpa Nama";
+                const phone = profile.phone || "Tidak ada No. HP";
+                
+                const status = user.status_langganan || "terkunci";
+                const expiredTime = user.expired_time ? new Date(user.expired_time).getTime() : 0;
+                const isRealAktif = status === 'aktif' && (!user.expired_time || now <= expiredTime);
+
+                const statusClass = isRealAktif ? "status-aktif" : "status-terkunci";
+                const statusText = isRealAktif ? "Aktif" : "Terkunci / Habis";
+
+                const startTimeVal = user.start_time || "";
+                const expiredTimeVal = user.expired_time || "";
+
+                htmlContent += `
+                    <tr>
+                        <td>
+                            <div class="store-name">${namaToko}</div>
+                            <div class="store-phone">📱 ${phone}</div>
+                        </td>
+                        <td>
+                            <span class="badge-status ${statusClass}">${statusText}</span>
+                        </td>
+                        <td>
+                            <div class="date-input-group">
+                                <label>Mulai:</label>
+                                <input type="datetime-local" id="start_${userId}" class="input-datetime" value="${startTimeVal}">
+                            </div>
+                            <div class="date-input-group">
+                                <label>Berakhir:</label>
+                                <input type="datetime-local" id="expired_${userId}" class="input-datetime" value="${expiredTimeVal}">
+                            </div>
+                            <button class="btn-action bg-save" onclick="saveDateTime('${userId}')">Simpan Waktu</button>
+                        </td>
+                        <td style="text-align: center;">
+                            ${
+                                isRealAktif 
+                                ? `<button class="btn-action bg-lock" onclick="updateStatus('${userId}', 'terkunci')">Kunci Manual</button>`
+                                : `<button class="btn-action bg-unlock" onclick="updateStatus('${userId}', 'aktif')">Buka Manual</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = htmlContent;
+        }
+
+        function saveDateTime(userId) {
+            const startTime = document.getElementById(`start_${userId}`).value;
+            const expiredTime = document.getElementById(`expired_${userId}`).value;
+
+            if (!startTime || !expiredTime) {
+                alert("Harap isi tanggal mulai dan tanggal berakhir dengan lengkap!");
+                return;
+            }
+
+            const formatOptions = { dateStyle: 'medium', timeStyle: 'short' };
+            const tglMulaiText = new Date(startTime).toLocaleString('id-ID', formatOptions);
+            const tglExpiredText = new Date(expiredTime).toLocaleString('id-ID', formatOptions);
+
+            dbRef.child(userId).update({
+                start_time: startTime,
+                expired_time: expiredTime,
+                status_langganan: "aktif",
+                notifikasi_kasir: {
+                    pesan: `🎉 Langganan Anda telah AKTIF! Berlaku dari ${tglMulaiText} s/d ${tglExpiredText}.`,
+                    waktu_kirim: new Date().toISOString(),
+                    dibaca: false
+                }
+            }).then(() => {
+                alert("Periode berlangganan berhasil disimpan dan dikirim ke aplikasi kasir!");
+            }).catch((error) => {
+                alert("Gagal menyimpan waktu: " + error.message);
+            });
+        }
+
+        function updateStatus(userId, statusBaru) {
+            let pesanNotif = "";
+            if (statusBaru === 'terkunci') {
+                pesanNotif = "⚠️ Masa aktif langganan Anda telah HABIS / TERKUNCI. Silakan lakukan pembayaran untuk melanjutkan.";
+            } else {
+                pesanNotif = "✅ Akun Anda telah dibuka oleh Admin Pusat.";
+            }
+
+            dbRef.child(userId).update({
+                status_langganan: statusBaru,
+                notifikasi_kasir: {
+                    pesan: pesanNotif,
+                    waktu_kirim: new Date().toISOString(),
+                    dibaca: false
+                }
+            }).catch((error) => {
+                alert("Gagal mengubah status: " + error.message);
+            });
+        }
+
+        window.onload = function() {
+            loadUsers();
+            // Lakukan pengecekan otomatis setiap 1 menit sekali selama halaman admin terbuka
+            setInterval(checkAndUpdateExpiredUsers, 60000);
+        };
+    </script>
+</body>
+</html>

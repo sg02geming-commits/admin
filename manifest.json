@@ -1,0 +1,20 @@
+{
+  "name": "admin aplikasi kasir",
+  "short_name": "AdminPusat",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "images/icon-192.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-512.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
