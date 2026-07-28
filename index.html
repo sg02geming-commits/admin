@@ -6,6 +6,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Pusat - Kontrol Aplikasi Kasir</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
             --primary-color: #2563eb;
@@ -17,13 +22,14 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border-color: #cbd5e1;
+            --chat-bg: #f8fafc;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         body {
@@ -39,7 +45,7 @@
         .admin-container {
             background-color: var(--card-bg);
             width: 100%;
-            max-width: 950px;
+            max-width: 1000px;
             padding: 24px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -71,7 +77,7 @@
         /* Statistik Ringkas */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-bottom: 16px;
         }
@@ -108,6 +114,7 @@
         .nav-tabs {
             display: flex;
             gap: 6px;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
@@ -142,7 +149,16 @@
             border-color: var(--primary-color);
         }
 
-        /* Tabel Manajemen Langganan */
+        /* Wrapper Konten Tab */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active-content {
+            display: block;
+        }
+
+        /* Tabel Umum */
         .table-container {
             width: 100%;
             max-height: 450px;
@@ -198,6 +214,8 @@
 
         .status-aktif { background-color: #dcfce7; color: var(--success-color); }
         .status-terkunci { background-color: #fee2e2; color: var(--danger-color); }
+        .status-pending { background-color: #fef3c7; color: var(--warning-color); }
+        .status-selesai { background-color: #dcfce7; color: var(--success-color); }
 
         /* Input Tanggal & Waktu */
         .date-input-group {
@@ -222,28 +240,26 @@
             background: white;
         }
 
-        .input-datetime:focus {
-            border-color: var(--primary-color);
-        }
-
         /* Tombol Aksi */
         .btn-action {
-            padding: 5px 10px;
+            padding: 6px 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 0.75rem;
             font-weight: 600;
             color: white;
             transition: opacity 0.2s;
-            margin-bottom: 4px;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .btn-action:hover { opacity: 0.85; }
-        .bg-lock { background-color: var(--danger-color); }
+        .bg-lock { background-color: var(--danger-color); margin-bottom: 4px; }
         .bg-unlock { background-color: var(--success-color); }
-        .bg-save { background-color: var(--primary-color); width: 100%; text-align: center; }
+        .bg-save { background-color: var(--primary-color); width: 100%; text-align: center; justify-content: center; }
+        .bg-chat { background-color: #6366f1; }
 
         .empty-state {
             text-align: center;
@@ -251,6 +267,159 @@
             padding: 30px;
             font-size: 0.9rem;
         }
+
+        /* Modal Balas Chat Gaya Modern */
+        .chat-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .chat-modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .chat-modal-container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 500px;
+            height: 600px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .chat-modal-overlay.show .chat-modal-container {
+            transform: translateY(0);
+        }
+
+        .chat-modal-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-modal-header h3 {
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .close-modal-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-modal-btn:hover { color: white; }
+
+        /* Jendela Gelembung Pesan */
+        .chat-messages-area {
+            flex: 1;
+            background-color: var(--chat-bg);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .message-bubble.incoming {
+            background-color: #ffffff;
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .message-bubble.outgoing {
+            background-color: #6366f1;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .message-time {
+            font-size: 9px;
+            display: block;
+            text-align: right;
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+
+        /* Area Footer Input Balasan */
+        .chat-modal-footer {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .reply-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .reply-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+        }
+
+        .send-reply-btn {
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .send-reply-btn:hover { background-color: #4f46e5; }
+        .send-reply-btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -258,7 +427,7 @@
     <div class="admin-container">
         <!-- Header Panel -->
         <div class="header">
-            <h1>Panel Kontrol Langganan</h1>
+            <h1>Panel Kontrol Langganan & Laporan Kasir</h1>
             <span class="badge-admin">Admin Pusat</span>
         </div>
 
@@ -269,42 +438,111 @@
                 <h3 id="statTotal">0</h3>
             </div>
             <div class="stat-card">
-                <span>Aktif</span>
+                <span>Aktif Berlangganan</span>
                 <h3 id="statAktif" style="color: var(--success-color);">0</h3>
             </div>
             <div class="stat-card">
-                <span>Terkunci / Habis</span>
+                <span>Nonaktif / Terkunci</span>
                 <h3 id="statTerkunci" style="color: var(--danger-color);">0</h3>
+            </div>
+            <div class="stat-card">
+                <span>Laporan Masuk</span>
+                <h3 id="statLaporan" style="color: var(--warning-color);">0</h3>
             </div>
         </div>
 
         <!-- Kontrol Tab & Pencarian -->
         <div class="controls-wrapper">
             <div class="nav-tabs">
-                <button class="tab-btn active" onclick="switchTab('semua', this)">Semua</button>
-                <button class="tab-btn" onclick="switchTab('aktif', this)">Aktif</button>
-                <button class="tab-btn" onclick="switchTab('terkunci', this)">Terkunci</button>
+                <button class="tab-btn active" onclick="switchTab('semua', this)">Semua Toko</button>
+                <button class="tab-btn" onclick="switchTab('aktif', this)">Toko Aktif</button>
+                <button class="tab-btn" onclick="switchTab('terkunci', this)">Toko Terkunci</button>
+                <button class="tab-btn" onclick="switchTab('analisis', this)">📊 Tabel Analisis</button>
+                <button class="tab-btn" onclick="switchTab('laporan', this)">💬 Laporan Masuk (<span id="countReportBadge">0</span>)</button>
             </div>
-            <input type="text" id="searchInput" class="search-box" placeholder="Cari nama toko / No. HP..." oninput="renderTable()">
+            <input type="text" id="searchInput" class="search-box" placeholder="Cari nama toko / No. HP / kategori..." oninput="renderCurrentView()">
         </div>
 
-        <!-- Tabel Manajemen Waktu Langganan -->
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 25%;">Informasi Toko</th>
-                        <th style="width: 15%;">Status</th>
-                        <th style="width: 40%;">Periode Berlangganan (Mulai & Berakhir)</th>
-                        <th style="width: 20%; text-align: center;">Aksi Kontrol</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBodyUser">
-                    <tr>
-                        <td colspan="4" class="empty-state">Memuat data dari server...</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- TAB CONTENT 1 & 2: PENGGUNA / LANGGANAN -->
+        <div id="section-langganan" class="tab-content active-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Informasi Toko</th>
+                            <th style="width: 15%;">Status</th>
+                            <th style="width: 40%;">Periode Berlangganan (Mulai & Berakhir)</th>
+                            <th style="width: 20%; text-align: center;">Aksi Kontrol</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyUser">
+                        <tr>
+                            <td colspan="4" class="empty-state">Memuat data dari server...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT 3: TABEL ANALISIS -->
+        <div id="section-analisis" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 35%;">Kategori / Status Langganan</th>
+                            <th style="width: 25%; text-align: center;">Jumlah Toko (Qty)</th>
+                            <th style="width: 40%;">Persentase dari Total Pengguna</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyAnalisis">
+                        <tr>
+                            <td colspan="3" class="empty-state">Memproses data analisis...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT 4: LAPORAN KASIR -->
+        <div id="section-laporan" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">ID Kasir / Toko</th>
+                            <th style="width: 15%;">Kategori</th>
+                            <th style="width: 40%;">Pesan / Kendala Terakhir</th>
+                            <th style="width: 15%;">Status</th>
+                            <th style="width: 10%; text-align: center;">Aksi / Balas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyReport">
+                        <tr>
+                            <td colspan="5" class="empty-state">Memuat daftar laporan...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CHAT / BALAS PESAN GAYA MODERN -->
+    <div id="chatModal" class="chat-modal-overlay">
+        <div class="chat-modal-container">
+            <div class="chat-modal-header">
+                <h3 id="modalChatTitle"><i class="fa-solid fa-headset"></i> Balas Laporan - Toko</h3>
+                <button class="close-modal-btn" onclick="closeChatModal()">&times;</button>
+            </div>
+            <div class="chat-messages-area" id="chatMessagesArea">
+                <!-- Gelembung Chat Masuk & Keluar akan dirender dinamis di sini -->
+            </div>
+            <div class="chat-modal-footer">
+                <input type="text" id="replyMessageInput" class="reply-input" placeholder="Ketik balasan untuk pengguna..." onkeypress="handleKeyPress(event)">
+                <button class="send-reply-btn" onclick="sendAdminReply()">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -328,52 +566,66 @@
             firebase.initializeApp(firebaseConfig);
         }
         
-        const dbRef = firebase.database().ref("users");
+        const dbUsersRef = firebase.database().ref("users");
+        const dbReportsRef = firebase.database().ref("laporan_kasir");
+        
         let globalUsersData = [];
+        let globalReportsData = [];
         let currentTab = 'semua';
+        let activeReportId = null; // Menyimpan ID laporan yang sedang dibuka di modal chat
 
-        function loadUsers() {
-            dbRef.on("value", (snapshot) => {
+        function loadData() {
+            dbUsersRef.on("value", (snapshot) => {
                 if (!snapshot.exists()) {
                     globalUsersData = [];
-                    renderTable();
-                    updateStats();
-                    return;
-                }
-
-                globalUsersData = [];
-                snapshot.forEach((childSnapshot) => {
-                    globalUsersData.push({
-                        userId: childSnapshot.key,
-                        ...childSnapshot.val()
+                } else {
+                    globalUsersData = [];
+                    snapshot.forEach((childSnapshot) => {
+                        globalUsersData.push({
+                            userId: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
                     });
-                });
-
-                // Jalankan fungsi pengecekan otomatis waktu habis setiap data berubah/dimuat
+                }
                 checkAndUpdateExpiredUsers();
-
                 updateStats();
-                renderTable();
-            }, (error) => {
-                console.error("Gagal memuat data: ", error);
-                document.getElementById("tableBodyUser").innerHTML = `<tr><td colspan="4" class="empty-state">Gagal terhubung: ${error.message}</td></tr>`;
+                renderCurrentView();
+            });
+
+            dbReportsRef.on("value", (snapshot) => {
+                if (!snapshot.exists()) {
+                    globalReportsData = [];
+                } else {
+                    globalReportsData = [];
+                    snapshot.forEach((childSnapshot) => {
+                        globalReportsData.push({
+                            reportId: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                    globalReportsData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                }
+                updateStats();
+                renderCurrentView();
+
+                // Jika modal chat sedang aktif, perbarui secara real-time tampilan chat di dalam modal
+                if (activeReportId) {
+                    const currentReport = globalReportsData.find(r => r.reportId === activeReportId);
+                    if (currentReport) renderChatBubbleStream(currentReport);
+                }
             });
         }
 
-        // Fungsi otomatis memeriksa database jika ada waktu langganan yang lewat dan mengubah status ke database
         function checkAndUpdateExpiredUsers() {
             const now = new Date().getTime();
-            
             globalUsersData.forEach(user => {
                 const status = user.status_langganan || "terkunci";
                 const expiredTimeStr = user.expired_time;
 
                 if (expiredTimeStr && status === "aktif") {
                     const expiredTime = new Date(expiredTimeStr).getTime();
-                    // Jika waktu sekarang sudah melewati waktu kedaluwarsa
                     if (now > expiredTime) {
-                        // Perbarui otomatis langsung ke Realtime Database dan kirim notifikasi habis
-                        dbRef.child(user.userId).update({
+                        dbUsersRef.child(user.userId).update({
                             status_langganan: "terkunci",
                             notifikasi_kasir: {
                                 pesan: "⚠️ Masa aktif langganan Anda telah HABIS / TERKUNCI. Silakan lakukan pembayaran untuk melanjutkan.",
@@ -393,24 +645,53 @@
             const aktif = globalUsersData.filter(u => {
                 const status = u.status_langganan || "terkunci";
                 const expired = u.expired_time ? new Date(u.expired_time).getTime() : 0;
-                return status === "aktif" && (!u.expired_time || now <= expired);
+                return status === 'aktif' && (!u.expired_time || now <= expired);
             }).length;
 
             const terkunci = total - aktif;
+            const totalLaporan = globalReportsData.filter(r => (r.status || 'pending') === 'pending').length;
 
             document.getElementById("statTotal").innerText = total;
             document.getElementById("statAktif").innerText = aktif;
             document.getElementById("statTerkunci").innerText = terkunci;
+            document.getElementById("statLaporan").innerText = totalLaporan;
+            document.getElementById("countReportBadge").innerText = totalLaporan;
         }
 
         function switchTab(tabName, element) {
             currentTab = tabName;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             element.classList.add('active');
-            renderTable();
+
+            const sectionLangganan = document.getElementById("section-langganan");
+            const sectionAnalisis = document.getElementById("section-analisis");
+            const sectionLaporan = document.getElementById("section-laporan");
+
+            sectionLangganan.classList.remove('active-content');
+            sectionAnalisis.classList.remove('active-content');
+            sectionLaporan.classList.remove('active-content');
+
+            if (tabName === 'analisis') {
+                sectionAnalisis.classList.add('active-content');
+            } else if (tabName === 'laporan') {
+                sectionLaporan.classList.add('active-content');
+            } else {
+                sectionLangganan.classList.add('active-content');
+            }
+            renderCurrentView();
         }
 
-        function renderTable() {
+        function renderCurrentView() {
+            if (currentTab === 'analisis') {
+                renderAnalisisTable();
+            } else if (currentTab === 'laporan') {
+                renderReportsTable();
+            } else {
+                renderUsersTable();
+            }
+        }
+
+        function renderUsersTable() {
             const tbody = document.getElementById("tableBodyUser");
             const keyword = document.getElementById("searchInput").value.toLowerCase();
             const now = new Date().getTime();
@@ -432,12 +713,11 @@
             });
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">Tidak ada data pengguna ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">Tidak ada data toko ditemukan.</td></tr>`;
                 return;
             }
 
             let htmlContent = "";
-
             filtered.forEach((user) => {
                 const userId = user.userId;
                 const profile = user.profile || {};
@@ -451,9 +731,6 @@
                 const statusClass = isRealAktif ? "status-aktif" : "status-terkunci";
                 const statusText = isRealAktif ? "Aktif" : "Terkunci / Habis";
 
-                const startTimeVal = user.start_time || "";
-                const expiredTimeVal = user.expired_time || "";
-
                 htmlContent += `
                     <tr>
                         <td>
@@ -466,11 +743,11 @@
                         <td>
                             <div class="date-input-group">
                                 <label>Mulai:</label>
-                                <input type="datetime-local" id="start_${userId}" class="input-datetime" value="${startTimeVal}">
+                                <input type="datetime-local" id="start_${userId}" class="input-datetime" value="${user.start_time || ""}">
                             </div>
                             <div class="date-input-group">
                                 <label>Berakhir:</label>
-                                <input type="datetime-local" id="expired_${userId}" class="input-datetime" value="${expiredTimeVal}">
+                                <input type="datetime-local" id="expired_${userId}" class="input-datetime" value="${user.expired_time || ""}">
                             </div>
                             <button class="btn-action bg-save" onclick="saveDateTime('${userId}')">Simpan Waktu</button>
                         </td>
@@ -484,8 +761,172 @@
                     </tr>
                 `;
             });
-
             tbody.innerHTML = htmlContent;
+        }
+
+        function renderAnalisisTable() {
+            const tbody = document.getElementById("tableBodyAnalisis");
+            const total = globalUsersData.length;
+            const now = new Date().getTime();
+            
+            const totalAktif = globalUsersData.filter(u => {
+                const status = u.status_langganan || "terkunci";
+                const expired = u.expired_time ? new Date(u.expired_time).getTime() : 0;
+                return status === 'aktif' && (!u.expired_time || now <= expired);
+            }).length;
+
+            const totalTerkunci = total - totalAktif;
+            const persentaseAktif = total > 0 ? ((totalAktif / total) * 100).toFixed(1) : 0;
+            const persentaseTerkunci = total > 0 ? ((totalTerkunci / total) * 100).toFixed(1) : 0;
+
+            tbody.innerHTML = `
+                <tr>
+                    <td><strong>Total Seluruh Pengguna / Toko Terdaftar</strong></td>
+                    <td style="text-align: center;"><strong>${total} Toko</strong></td>
+                    <td>100% dari basis data</td>
+                </tr>
+                <tr>
+                    <td>🟢 Pengguna Berlangganan (<span style="color:var(--success-color);">Aktif</span>)</td>
+                    <td style="text-align: center;"><span class="badge-status status-aktif">${totalAktif} Toko</span></td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="flex:1; background:#e2e8f0; height:8px; border-radius:4px; overflow:hidden;">
+                                <div style="width: ${persentaseAktif}%; background:var(--success-color); height:100%;"></div>
+                            </div>
+                            <span style="font-size:0.75rem; font-weight:bold;">${persentaseAktif}%</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>🔴 Pengguna Nonaktif / Terkunci (Masa Aktif Habis)</td>
+                    <td style="text-align: center;"><span class="badge-status status-terkunci">${totalTerkunci} Toko</span></td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="flex:1; background:#e2e8f0; height:8px; border-radius:4px; overflow:hidden;">
+                                <div style="width: ${persentaseTerkunci}%; background:var(--danger-color); height:100%;"></div>
+                            </div>
+                            <span style="font-size:0.75rem; font-weight:bold;">${persentaseTerkunci}%</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function renderReportsTable() {
+            const tbody = document.getElementById("tableBodyReport");
+            const keyword = document.getElementById("searchInput").value.toLowerCase();
+
+            const filtered = globalReportsData.filter(report => {
+                const cashierId = (report.cashierId || "").toLowerCase();
+                const category = (report.category || "").toLowerCase();
+                const message = (report.message || "").toLowerCase();
+                return cashierId.includes(keyword) || category.includes(keyword) || message.includes(keyword);
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Belum ada laporan kendala masuk.</td></tr>`;
+                return;
+            }
+
+            let htmlContent = "";
+            filtered.forEach((report) => {
+                const reportId = report.reportId;
+                const status = report.status || "pending";
+                const statusClass = status === 'selesai' ? "status-selesai" : "status-pending";
+                const statusText = status === 'selesai' ? "Selesai" : "Pending";
+
+                htmlContent += `
+                    <tr>
+                        <td><strong>${report.cashierId || "Tanpa ID"}</strong></td>
+                        <td><span class="badge-status" style="background:#e0f2fe; color:#0369a1;">${report.category || "Umum"}</span></td>
+                        <td>
+                            <div style="font-size:0.8rem; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${report.message || "-"}</div>
+                        </td>
+                        <td><span class="badge-status ${statusClass}">${statusText}</span></td>
+                        <td style="text-align: center;">
+                            <button class="btn-action bg-chat" onclick="openChatModal('${reportId}')">
+                                <i class="fa-solid fa-comments"></i> Balas
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = htmlContent;
+        }
+
+        // --- FUNGSI MODAL & BALAS CHAT REALTIME ---
+        function openChatModal(reportId) {
+            activeReportId = reportId;
+            const report = globalReportsData.find(r => r.reportId === reportId);
+            if (!report) return;
+
+            document.getElementById("modalChatTitle").innerHTML = `<i class="fa-solid fa-headset"></i> Percakapan - ${report.cashierId}`;
+            renderChatBubbleStream(report);
+            document.getElementById("chatModal").classList.add("show");
+        }
+
+        function closeChatModal() {
+            document.getElementById("chatModal").classList.remove("show");
+            activeReportId = null;
+        }
+
+        function renderChatBubbleStream(report) {
+            const chatArea = document.getElementById("chatMessagesArea");
+            let html = "";
+
+            // Pesan awal dari user (Laporan Kasir)
+            const userTime = report.timestamp ? new Date(report.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+            html += `
+                <div class="message-bubble incoming">
+                    <strong>[${report.category || "Kendala"}]</strong><br>
+                    ${report.message}
+                    <span class="message-time">${userTime}</span>
+                </div>
+            `;
+
+            // Riwayat balasan dari Admin Pusat atau percakapan lanjutan jika ada
+            if (report.replies) {
+                Object.values(report.replies).forEach(reply => {
+                    const replyTime = reply.timestamp ? new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+                    const bubbleClass = reply.sender === 'admin' ? 'outgoing' : 'incoming';
+                    html += `
+                        <div class="message-bubble ${bubbleClass}">
+                            ${reply.message}
+                            <span class="message-time">${replyTime}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            chatArea.innerHTML = html;
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function sendAdminReply() {
+            const inputField = document.getElementById("replyMessageInput");
+            const messageText = inputField.value.trim();
+
+            if (!messageText || !activeReportId) return;
+
+            // Simpan balasan admin ke dalam node "replies" di bawah laporan terkait pada Firebase Realtime Database
+            const replyRef = dbReportsRef.child(activeReportId).child("replies");
+            replyRef.push({
+                sender: "admin",
+                message: messageText,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                // Ubah status otomatis menjadi selesai atau biarkan berlanjut (bisa ditandai selesai)
+                dbReportsRef.child(activeReportId).update({ status: "selesai" });
+                inputField.value = "";
+            }).catch(error => {
+                alert("Gagal mengirim pesan: " + error.message);
+            });
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendAdminReply();
+            }
         }
 
         function saveDateTime(userId) {
@@ -501,7 +942,7 @@
             const tglMulaiText = new Date(startTime).toLocaleString('id-ID', formatOptions);
             const tglExpiredText = new Date(expiredTime).toLocaleString('id-ID', formatOptions);
 
-            dbRef.child(userId).update({
+            dbUsersRef.child(userId).update({
                 start_time: startTime,
                 expired_time: expiredTime,
                 status_langganan: "aktif",
@@ -511,21 +952,18 @@
                     dibaca: false
                 }
             }).then(() => {
-                alert("Periode berlangganan berhasil disimpan dan dikirim ke aplikasi kasir!");
+                alert("Periode berlangganan berhasil disimpan!");
             }).catch((error) => {
                 alert("Gagal menyimpan waktu: " + error.message);
             });
         }
 
         function updateStatus(userId, statusBaru) {
-            let pesanNotif = "";
-            if (statusBaru === 'terkunci') {
-                pesanNotif = "⚠️ Masa aktif langganan Anda telah HABIS / TERKUNCI. Silakan lakukan pembayaran untuk melanjutkan.";
-            } else {
-                pesanNotif = "✅ Akun Anda telah dibuka oleh Admin Pusat.";
-            }
+            let pesanNotif = statusBaru === 'terkunci' 
+                ? "⚠️ Masa aktif langganan Anda telah HABIS / TERKUNCI. Silakan lakukan pembayaran untuk melanjutkan." 
+                : "✅ Akun Anda telah dibuka oleh Admin Pusat.";
 
-            dbRef.child(userId).update({
+            dbUsersRef.child(userId).update({
                 status_langganan: statusBaru,
                 notifikasi_kasir: {
                     pesan: pesanNotif,
@@ -538,8 +976,7 @@
         }
 
         window.onload = function() {
-            loadUsers();
-            // Lakukan pengecekan otomatis setiap 1 menit sekali selama halaman admin terbuka
+            loadData();
             setInterval(checkAndUpdateExpiredUsers, 60000);
         };
     </script>
