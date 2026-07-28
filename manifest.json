@@ -1,19 +1,19 @@
 {
-  "name": "admin aplikasi kasir",
-  "short_name": "AdminPusat",
+  "name": "admin pusat",
+  "short_name": "admin-Kasir Aja!",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "images/icon-192.png",
-      "sizes": "1024x1024",
+      "src": "/path/to/icon-192x192.png",
+      "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "images/icon-512.png",
-      "sizes": "1024x1024",
+      "src": "/path/to/icon-512x512.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
